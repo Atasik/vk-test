@@ -13,22 +13,26 @@ import (
 )
 
 func main() {
-	// вынес все важные переменные в main, чтобы легче было менять код
-	var total uint64 = 0
 	textToFind := "Go"
+	Count(os.Stdin, textToFind)
+}
+
+func Count(stdin io.Reader, textToFind string) {
+	// вынес все важные переменные, чтобы легче было менять код
+	var total uint64 = 0
 	paths := make(chan string)
 	wg := &sync.WaitGroup{}
 
-	go CountData(paths, textToFind, wg, &total)
-	ReadData(paths)
+	go countData(paths, textToFind, wg, &total)
+	readData(paths, stdin)
 
 	wg.Wait()
 	close(paths)
 	fmt.Printf("Total: %d", total)
 }
 
-func ReadData(paths chan string) {
-	scanner := bufio.NewScanner(os.Stdin)
+func readData(paths chan string, stdin io.Reader) {
+	scanner := bufio.NewScanner(stdin)
 	for scanner.Scan() {
 		path := scanner.Text()
 		switch path {
@@ -40,7 +44,7 @@ func ReadData(paths chan string) {
 	}
 }
 
-func CountData(paths chan string, textToFind string, wg *sync.WaitGroup, total *uint64) {
+func countData(paths chan string, textToFind string, wg *sync.WaitGroup, total *uint64) {
 	goroutinesNum := 5
 	waitCh := make(chan struct{}, goroutinesNum) // канал, который блокирует добавление "лишних" горутин
 
